@@ -1,56 +1,55 @@
 # Task Management API
 
-A production-ready RESTful API developed with **ASP.NET Core (.NET 10)**, **Entity Framework Core**, and **SQL Server**. The platform delivers comprehensive project tracking, scoped task management, and comment moderation enforced by strict Role-Based Access Control (RBAC), standardized RFC 7807 error handling, and automated CI/CD workflows.
+A RESTful backend API built with ASP.NET Core for managing projects, team members, tasks, and comments. The project focuses on authentication, role-based authorization, project-level access control, and common backend features used in real-world applications.
 
----
+## Features
 
-## Core Features
-
-* **Authentication & Role-Based Access Control (RBAC):**
-  * JWT Bearer token authentication with secure password hashing.
-  * Three permission tiers: `Admin`, `ProjectManager`, and `Member`.
-* **Resource Scoping & Access Restrictions:**
-  * Multi-tenant project memberships ensuring users only query or mutate tasks within authorized projects.
-  * Granular comment moderation permissions restricted to authors, project managers, and administrators.
-* **Advanced Querying & Pagination:**
-  * Case-insensitive keyword search matching task titles and descriptions.
-  * Filtering by status (`Todo`, `InProgress`, `Completed`, `Cancelled`) and priority (`Low`, `Medium`, `High`, `Critical`).
-  * Dynamic sorting across multiple entity properties.
-  * Standard offset-based pagination returning complete navigation metadata (`PageNumber`, `PageSize`, `TotalCount`, `TotalPages`).
-* **Standardized Global Error Pipeline:**
-  * Native .NET `IExceptionHandler` implementation mapping domain exceptions to RFC 7807 `ProblemDetails` responses.
-  * Strict custom exception hierarchy (`NotFoundException`, `ConflictException`, `BadRequestException`).
-* **Automated CI/CD & Testing:**
-  * Comprehensive test suite utilizing `xUnit v3`, `FluentAssertions`, and `EF Core InMemory`.
-  * GitHub Actions automated CI workflow executing on every push and pull request.
-
----
+* JWT-based user authentication
+* Role-based authorization with Admin, Project Manager, and Member roles
+* Project creation and management
+* Add and remove members from projects
+* Task creation, assignment, updating, and deletion
+* Task status and priority management
+* Comments for tasks
+* Project-level access control to ensure users can only access permitted resources
+* Task filtering, searching, sorting, and pagination
+* DTOs and service-layer architecture
+* Dependency Injection
+* Global exception handling using ProblemDetails
+* Unit testing with xUnit
+* GitHub Actions for automated build and test validation
 
 ## Tech Stack
 
-* **Framework:** ASP.NET Core Web API (.NET 10)
-* **Data Access:** Entity Framework Core
-* **Database:** Microsoft SQL Server
-* **Testing:** xUnit v3, FluentAssertions, Moq, EF Core InMemory Provider
-* **CI/CD:** GitHub Actions
-* **API Documentation:** Swagger / OpenAPI
+* C#
+* .NET 10
+* ASP.NET Core Web API
+* Entity Framework Core
+* SQL Server
+* JWT Authentication
+* xUnit
+* Swagger / OpenAPI
+* GitHub Actions
 
----
+## Project Overview
 
-## Project Structure
+The API is designed around projects and their members. Users can participate in multiple projects, with membership managed through a separate `ProjectMember` entity.
 
-```text
-TaskManagementAPI/
-├── Controllers/              # API endpoints (Auth, Projects, Tasks, Comments)
-├── IServices/                # Service layer contracts
-├── Services/                 # Core domain implementations and business logic
-├── Models/                   # EF Core domain entities and enums
-├── DTOs/                     # Strongly-typed request/response records
-├── Exceptions/               # Custom domain exceptions and GlobalExceptionHandler
-├── Data/                     # AppDbContext and Fluent API entity configs
-└── Program.cs                # Dependency injection and middleware pipeline
+Tasks belong to projects and can be assigned to project members. Access to project and task operations is controlled using both user roles and project membership, providing more granular authorization than role checks alone.
 
-TaskManagementAPI.Tests/
-├── ProjectServiceTests.cs    # Unit tests for project authorization and memberships
-├── TaskManagementTests.cs    # Domain model state and exception contract tests
-└── TaskManagementAPI.Tests.csproj
+The API also includes pagination, filtering, searching, and sorting for task queries to make the application more practical for handling larger datasets.
+
+## Backend Concepts Practiced
+
+* ASP.NET Core Web API
+* Entity Framework Core & SQL Server
+* Entity Relationships
+* LINQ & IQueryable
+* DTOs
+* Dependency Injection
+* JWT Authentication
+* Role-Based & Resource-Based Authorization
+* Pagination, Filtering & Sorting
+* Global Exception Handling
+* Unit Testing
+* CI with GitHub Actions
