@@ -2,5 +2,5 @@
 
 namespace TaskManagementAPI.Exceptions;
 
-public sealed class InvalidOperationException(string message)
-    : AppException(message, HttpStatusCode.NotFound);
+public sealed class AppInvalidOperationException(string message)
+    : AppException(message, HttpStatusCode.BadRequest);

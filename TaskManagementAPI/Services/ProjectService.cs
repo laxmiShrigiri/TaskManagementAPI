@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementAPI.Data;
 using TaskManagementAPI.DTOs.Projects;
+using TaskManagementAPI.Exceptions;
 using TaskManagementAPI.IServices;
 using TaskManagementAPI.Models;
 
@@ -106,7 +107,7 @@ namespace TaskManagementAPI.Services
             var alreadyMember = project.Members.Any(x => x.userId ==dto.userId);
 
             if(alreadyMember)
-                throw new InvalidOperationException("User is already a member of this project.");
+                throw new ConflictException("User is already a member of this project.");
 
             project.Members.Add(new ProjectMember
             {

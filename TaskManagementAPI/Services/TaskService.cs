@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
 using TaskManagementAPI.Data;
+using TaskManagementAPI.DTOs.Common;
 using TaskManagementAPI.DTOs.Tasks;
 using TaskManagementAPI.IServices;
 using TaskManagementAPI.Models;
@@ -152,6 +153,84 @@ namespace TaskManagementAPI.Services
             return await GetTaskById(userId, role, taskId);
 
         }
+
+        public async Task<PagedResult<TaskResponseDto>> GetTasksPage(Guid userId, string role, TaskQueryParameters query)
+        {
+            var taskQuery = db.Tasks
+                .Include(m => m.Project)
+                .Include(t => t.AssignedToUser)
+                .AsQueryable();
+
+            if(role != nameof(UserRole.Admin))
+            {
+                var accessibleProjectIds = db.ProjectMembers
+                    .Where(pm => pm.userId == userId)
+                    .Select(m => m.ProjectId);
+
+                taskQuery = taskQuery.Where(t => accessibleProjectIds.Contains(t.ProjectId));
+            }
+
+            if(query.ProjectId.HasValue)
+                taskQuery = taskQuery.Where(t=>t.ProjectId == query.ProjectId.Value);
+
+            if (query.Status.HasValue)
+                taskQuery = taskQuery.Where(t => t.Status == query.Status.Value);
+
+            if (query.Priority.HasValue)
+                taskQuery = taskQuery.Where(t => t.Priority == query.Priority.Value);
+
+            if (query.AssignedToUserId.HasValue)
+                taskQuery = taskQuery.Where(t => t.AssignedToUserId == query.AssignedToUserId.Value);
+
+            if (query.DueBefore.HasValue)
+                taskQuery = taskQuery.Where(t => t.DueDate <= query.DueBefore.Value);
+
+            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+            {
+                var term = query.SearchTerm.Trim().ToLower();
+                taskQuery = taskQuery.Where(t =>
+                    t.Title.ToLower().Contains(term) ||
+                    (t.Description != null && t.Description.ToLower().Contains(term)));
+            }
+
+            // 4. Dynamic Sorting
+            taskQuery = (query.SortBy?.ToLower()) switch
+            {
+                "duedate" => query.SortDescending ? taskQuery.OrderByDescending(t => t.DueDate) : taskQuery.OrderBy(t => t.DueDate),
+                "priority" => query.SortDescending ? taskQuery.OrderByDescending(t => t.Priority) : taskQuery.OrderBy(t => t.Priority),
+                "title" => query.SortDescending ? taskQuery.OrderByDescending(t => t.Title) : taskQuery.OrderBy(t => t.Title),
+                _ => query.SortDescending ? taskQuery.OrderByDescending(t => t.CreatedAt) : taskQuery.OrderBy(t => t.CreatedAt)
+            };
+            var totalCount = await taskQuery.CountAsync();
+
+            // 6. Pagination execution (.Skip and .Take)
+            var items = await taskQuery
+                .Skip((query.PageNumber - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .Select(t => new TaskResponseDto(
+                    t.Id,
+                    t.Title,
+                    t.Description,
+                    t.Status.ToString(),
+                    t.Priority.ToString(),
+                    t.DueDate,
+                    t.ProjectId,
+                    t.Project.Name,
+                    t.AssignedToUserId,
+                    t.AssignedToUser != null ? t.AssignedToUser.Name : null,
+                    t.AssignedByUserId,
+                    t.CreatedAt,
+                    t.UpdatedAt
+                ))
+                .ToListAsync();
+
+            return new PagedResult<TaskResponseDto>(items, totalCount, query.PageNumber, query.PageSize);
+        
+
+        }
+
+
+
         private void EnsureCanManageProject(Project project, Guid currentUserId, string role)
         {
             if (role == nameof(UserRole.Admin)) return;

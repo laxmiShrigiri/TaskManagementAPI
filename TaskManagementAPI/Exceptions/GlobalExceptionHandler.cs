@@ -20,7 +20,7 @@ namespace TaskManagementAPI.Exceptions
             {
                 AppException appEx => (appEx.StatusCode, appEx.GetType().Name.Replace("Exception", string.Empty)),
                 KeyNotFoundException => (HttpStatusCode.NotFound, "Not Found"),
-                UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unathorized"),
+                UnauthorizedAccessException => (HttpStatusCode.Forbidden, "Unathorized"),
                 _=> (HttpStatusCode.InternalServerError,"Internal Server Error") 
             };
             httpContext.Response.StatusCode = (int)statusCode;

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TaskManagementAPI.DTOs.Tasks;
 using TaskManagementAPI.IServices;
+using TaskManagementAPI.Models;
 using TaskManagementAPI.Services;
 
 namespace TaskManagementAPI.Controllers
@@ -59,6 +60,13 @@ namespace TaskManagementAPI.Controllers
         public async Task<IActionResult> UpdateTaskStatus(Guid id,UpdateTaskStatusRequestDto dto)
         {
             var result = await taskService.UpdateStatus(userId, role, id, dto);
+            return Ok(result);
+        }
+
+        [HttpGet("GetTasksPage")]
+        public async Task<IActionResult> GetTask([FromQuery] TaskQueryParameters query)
+        {
+            var result = await taskService.GetTasksPage(userId, role, query);
             return Ok(result);
         }
     }

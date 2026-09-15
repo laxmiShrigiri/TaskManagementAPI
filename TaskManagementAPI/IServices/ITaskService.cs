@@ -1,4 +1,5 @@
-﻿using TaskManagementAPI.DTOs.Tasks;
+﻿using TaskManagementAPI.DTOs.Common;
+using TaskManagementAPI.DTOs.Tasks;
 
 namespace TaskManagementAPI.IServices
 {
@@ -10,5 +11,7 @@ namespace TaskManagementAPI.IServices
         Task<TaskResponseDto> UpdateTask(Guid userId, string role, Guid taskId, UpdateTaskRequestDto dto);
         Task DeleteTask(Guid userId, string role, Guid taskId);
         Task<TaskResponseDto> UpdateStatus(Guid userId, string role, Guid taskId, UpdateTaskStatusRequestDto dto);
+
+        Task<PagedResult<TaskResponseDto>> GetTasksPage(Guid userId, string role, TaskQueryParameters query);
     }
 }
