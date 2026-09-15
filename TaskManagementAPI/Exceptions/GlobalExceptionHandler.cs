@@ -19,8 +19,7 @@ namespace TaskManagementAPI.Exceptions
             var (statusCode, title) = exception switch
             {
                 AppException appEx => (appEx.StatusCode, appEx.GetType().Name.Replace("Exception", string.Empty)),
-                KeyNotFoundException => (HttpStatusCode.NotFound, "Not Found"),
-                UnauthorizedAccessException => (HttpStatusCode.Forbidden, "Unathorized"),
+                UnauthorizedAccessException => (HttpStatusCode.Forbidden, "Forbidden"),
                 _=> (HttpStatusCode.InternalServerError,"Internal Server Error") 
             };
             httpContext.Response.StatusCode = (int)statusCode;

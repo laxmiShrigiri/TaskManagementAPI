@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementAPI.Data;
 using TaskManagementAPI.DTOs.Comments;
+using TaskManagementAPI.Exceptions;
 using TaskManagementAPI.IServices;
 using TaskManagementAPI.Models;
 
@@ -14,7 +15,7 @@ namespace TaskManagementAPI.Services
                 .FirstOrDefaultAsync(m => m.Id == taskId);
 
             if (task is null)
-                throw new KeyNotFoundException("Task not found.");
+                throw new NotFoundException("Task not found.");
 
             await EnsureCanAccessProject(userId,role, task.ProjectId);
 
@@ -45,7 +46,7 @@ namespace TaskManagementAPI.Services
                 .FirstOrDefaultAsync(m => m.Id == taskId);
 
             if (task is null)
-                throw new KeyNotFoundException("Task not found.");
+                throw new NotFoundException("Task not found.");
 
             await EnsureCanAccessProject(userId, role, task.ProjectId);
             var comments = await db.Comments
@@ -69,7 +70,7 @@ namespace TaskManagementAPI.Services
                 .ThenInclude(p=>p.Project)
                 .FirstOrDefaultAsync(x=> x.Id == commentId);
             if(comment is null)
-                throw new KeyNotFoundException("Comment not found.");
+                throw new NotFoundException("Comment not found.");
 
             var isAuthor = comment.UserId == userId;
             var isProjectOwner = role == nameof(UserRole.ProjectManager) && comment.Task.Project.CreatedByUserId == userId;

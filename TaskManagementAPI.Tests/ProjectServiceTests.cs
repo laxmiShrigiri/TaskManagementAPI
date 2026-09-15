@@ -94,4 +94,52 @@ public class ProjectServiceTests
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage("You do not have permission to modify this project.");
     }
+
+    [Fact]
+    public async Task CreateProject_ShouldCreateProjectAndAddCreatorAsMember()
+    {
+        // Arrange
+        using var db = CreateInMemoryDbContext();
+
+        var userId = Guid.NewGuid();
+
+        db.Users.Add(new User
+        {
+            Id = userId,
+            Name = "Project Manager",
+            Email = "pm@example.com",
+            PasswordHash = "hash123",
+            Role = UserRole.ProjectManager
+        });
+
+        await db.SaveChangesAsync();
+
+        var projectService = new ProjectService(db);
+
+        var dto = new CreateProjectDto(
+            "Task Management Project",
+            "Backend API project"
+        );
+
+        // Act
+        var result = await projectService.CreateProject(userId, dto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Name.Should().Be("Task Management Project");
+        result.Description.Should().Be("Backend API project");
+        result.CreatedByUserId.Should().Be(userId);
+
+        var project = await db.Projects
+            .Include(p => p.Members)
+            .FirstOrDefaultAsync(p => p.Id == result.Id);
+
+        project.Should().NotBeNull();
+        project!.Members.Should().ContainSingle();
+
+        var member = project.Members.First();
+
+        member.userId.Should().Be(userId);
+        member.ProjectId.Should().Be(project.Id);
+    }
 }

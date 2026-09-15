@@ -29,8 +29,8 @@ namespace TaskManagementAPI.Services
             db.Projects.Add(project);
             await db.SaveChangesAsync();
 
-            return await GetProjectById(currentUserId, nameof(UserRole.Admin), project.Id);
-            //  return MapToResponseDto(project);
+            //return await GetProjectById(currentUserId, nameof(UserRole.Admin), project.Id);
+              return MapToResponseDto(project);
         }
 
         public async Task<IEnumerable<ProjectResponseDto>> GetUserProjectsAsync(Guid currentUserId, string role)
@@ -57,7 +57,7 @@ namespace TaskManagementAPI.Services
                 .ThenInclude(u => u.user)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
             if (project is null)
-                throw new KeyNotFoundException("Project not found.");
+                throw new NotFoundException("Project not found.");
 
             if (role != nameof(UserRole.Admin) && !project.Members.Any(m => m.userId == userId))
                 throw new UnauthorizedAccessException("You are not authorized to view this project.");
@@ -71,7 +71,7 @@ namespace TaskManagementAPI.Services
                .ThenInclude(u => u.user)
                .FirstOrDefaultAsync(p => p.Id == dto.ProjectId);
             if (project is null)
-                throw new KeyNotFoundException("Project not found.");
+                throw new NotFoundException("Project not found.");
             EnsureCanManageProject(project, userId, role);
 
             project.Name = dto.Name;
@@ -85,7 +85,7 @@ namespace TaskManagementAPI.Services
         {
             var project = await db.Projects.FirstOrDefaultAsync(x => x.Id == projecId);
             if (project is null)
-                throw new KeyNotFoundException("Project not found.");
+                throw new NotFoundException("Project not found.");
             EnsureCanManageProject(project, userId, role);
             db.Projects.Remove(project);
             await db.SaveChangesAsync();
@@ -97,12 +97,12 @@ namespace TaskManagementAPI.Services
                 .Include(m => m.Members)
                 .FirstOrDefaultAsync(p => p.Id == dto.ProjectId);
             if(project is null)
-                throw new KeyNotFoundException("Project not found.");
+                throw new NotFoundException("Project not found.");
             EnsureCanManageProject(project, userId, role);
 
             var userExist = await db.Users.AnyAsync(x => x.Id == dto.userId);
             if(!userExist)
-                throw new KeyNotFoundException("Target user not found.");
+                throw new NotFoundException("Target user not found.");
 
             var alreadyMember = project.Members.Any(x => x.userId ==dto.userId);
 
@@ -124,16 +124,16 @@ namespace TaskManagementAPI.Services
                 .Include(m => m.Members)
                 .FirstOrDefaultAsync(p => p.Id == dto.ProjectId);
             if (project is null)
-                throw new KeyNotFoundException("Project not found.");
+                throw new NotFoundException("Project not found.");
             EnsureCanManageProject(project, userId, role);
 
             var userExist = await db.Users.AnyAsync(x => x.Id == dto.userId);
             if (!userExist)
-                throw new KeyNotFoundException("Target user not found.");
+                throw new NotFoundException("Target user not found.");
 
             var member = project.Members.FirstOrDefault(x => x.userId == dto.userId);
             if(member is null)
-                throw new KeyNotFoundException("User is not a member of this project.");
+                throw new NotFoundException("User is not a member of this project.");
             project.Members.Remove(member);
             await db.SaveChangesAsync();
         }
@@ -145,7 +145,7 @@ namespace TaskManagementAPI.Services
                 .ThenInclude(u => u.user)
                 .FirstOrDefaultAsync(x => x.Id == projectId);
             if (project is null)
-                throw new KeyNotFoundException("Project not found.");
+                throw new NotFoundException("Project not found.");
 
             if(role!= nameof(UserRole.Admin) && !project.Members.Any(m=> m.userId==userId))
                 throw new UnauthorizedAccessException("You are not authorized to view members of this project.");
